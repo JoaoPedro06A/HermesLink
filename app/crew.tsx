@@ -4,6 +4,9 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3001');
 
 export default function CrewScreen() {
   const router = useRouter();
@@ -40,8 +43,27 @@ export default function CrewScreen() {
   }, []);
 
   useEffect(() => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
+    socket.on('receive_message', (data: { origin: string; text: string; author: string }) => {
+      if (data.origin === 'EARTH') {
+        const incomingMsg = {
+          id: Date.now(),
+          sender: 'CONTROLE DA TERRA',
+          text: data.text,
+          type: 'in',
+          time: 'AGORA'
+        };
+        setMessages(prev => [...prev, incomingMsg]);
+      }
+    });
+
+    return () => {
+      socket.off('receive_message');
+    };
   }, []);
+
+  useEffect(() => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
 
   const toggleTask = (id: number) => {
     setTasks(tasks.map(task => 
@@ -139,6 +161,14 @@ export default function CrewScreen() {
       type: 'out',
       time: 'AGORA'
     };
+
+    // Envia para o backend
+    socket.emit('send_message', {
+      author: currentName,
+      text: messageInput,
+      origin: 'CREW'
+    });
+
     setMessages([...messages, newMessage]);
     setMessageInput('');
   };

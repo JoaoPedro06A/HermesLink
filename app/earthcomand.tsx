@@ -4,6 +4,10 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import io from 'socket.io-client';
+
+// Substitua pelo IP da sua máquina se for testar no celular físico
+const socket = io('http://localhost:3001');
 
 export default function EarthCommandScreen() {
   const router = useRouter();
@@ -42,7 +46,26 @@ export default function EarthCommandScreen() {
     { label: 'BAIXA', color: '#00FF41' },
   ];
 
-  // Simulação de telemetria em tempo real
+  useEffect(() => {
+    // Escuta novas mensagens vindas de Marte
+    socket.on('receive_message', (data: { origin: string; author: string; text: string }) => {
+      console.log('Mensagem recebida em EarthControl:', data); // Adicione esta linha
+      if (data.origin === 'CREW') {
+        const incomingMsg = {
+          id: Date.now(),
+          sender: `MARTE (${data.author})`,
+          text: data.text,
+          type: 'in'
+        };
+        setMessages(prev => [...prev, incomingMsg]);
+      }
+    });
+
+    return () => {
+      socket.off('receive_message');
+    };
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCrewStats(prev => ({
@@ -85,7 +108,14 @@ export default function EarthCommandScreen() {
       type: 'out'
     };
     
-    setMessages([...messages, newMessage]);
+    // Envia para o backend (Marte)
+    socket.emit('send_message', {
+      author: 'HOUSTON',
+      text: messageInput,
+      origin: 'EARTH'
+    });
+    
+    setMessages(prev => [...prev, newMessage]);
     setMessageInput('');
   };
 

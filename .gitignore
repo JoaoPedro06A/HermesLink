@@ -3,6 +3,10 @@
 # dependencies
 node_modules/
 
+# backend dependencies (se a pasta backend estiver na raiz)
+backend/node_modules/
+backend/.env
+
 # Expo
 .expo/
 dist/
