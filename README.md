@@ -7,6 +7,15 @@ _Uma interface futurista para gerenciar e operar missões espaciais em Marte._
 
 O Hermeslink é um sistema de interface de usuário (UI) projetado para simular o controle de uma missão espacial em Marte. Ele oferece duas interfaces principais: uma para o **Comando da Terra (Houston)** e outra para a **Tripulação em Marte**. O objetivo é criar uma experiência imersiva e funcional, onde dados vitais, tarefas e comunicações são gerenciados de forma dinâmica.
 
+## 🌍 Alinhamento com os ODS da ONU
+
+Este projeto simula tecnologias e protocolos alinhados aos Objetivos de Desenvolvimento Sustentável:
+- **ODS 2**: Monitoramento de sistemas de suporte à vida e estufas para produção sustentável de alimentos.
+- **ODS 8**: Gestão operacional e bem-estar da tripulação.
+- **ODS 9**: Infraestrutura de comunicação resiliente (Deep Space Network).
+- **ODS 11**: Gestão de recursos em comunidades isoladas e autossuficientes.
+- **ODS 13**: Eficiência energética e monitoramento climático planetário.
+
 ## ✨ Funcionalidades Atuais
 
 ### 1. Tela de Seleção de Tripulante (`crew-selection.tsx`)
@@ -110,4 +119,3 @@ As próximas etapas para o backend incluem:
 ## 🤝 Contribuição
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
-

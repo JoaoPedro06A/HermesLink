@@ -25,6 +25,7 @@ export default function EarthCommandScreen() {
   const [missionStats, setMissionStats] = useState({
     oxygen: 88,
     energy: 94,
+    water: 76,
   });
 
   const [crewStats, setCrewStats] = useState({
@@ -93,6 +94,7 @@ export default function EarthCommandScreen() {
       setMissionStats(prev => ({
         oxygen: Math.max(0, prev.oxygen + (Math.random() > 0.5 ? 0.1 : -0.1)),
         energy: Math.max(0, prev.energy - 0.05),
+        water: Math.max(0, prev.water - 0.02),
       }));
     }, 3000);
     return () => clearInterval(interval);
@@ -186,6 +188,15 @@ export default function EarthCommandScreen() {
                 </View>
                 <View style={styles.miniProgress}>
                   <View style={[styles.miniFill, { width: `${missionStats.energy}%`, backgroundColor: '#7000FF' }]} />
+                </View>
+              </View>
+              <View style={styles.missionStatItem}>
+                <View style={styles.statHeaderMini}>
+                  <Text style={styles.statLabelMini}>RESERVA HÍDRICA (ODS 11)</Text>
+                  <Text style={styles.statValueMini}>{missionStats.water.toFixed(0)}%</Text>
+                </View>
+                <View style={styles.miniProgress}>
+                  <View style={[styles.miniFill, { width: `${missionStats.water}%`, backgroundColor: '#00E5FF' }]} />
                 </View>
               </View>
             </View>

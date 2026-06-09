@@ -13,6 +13,7 @@ export default function CrewScreen() {
   const { name, id } = useLocalSearchParams();
   const [oxygen, setOxygen] = useState(88);
   const [energy, setEnergy] = useState(94);
+  const [water, setWater] = useState(76);
   const [bpm, setBpm] = useState(72);
   const [statusText, setStatusText] = useState('ESTÁVEL');
   const [currentName, setCurrentName] = useState(name || 'TRIPULANTE');
@@ -53,6 +54,7 @@ export default function CrewScreen() {
     const interval = setInterval(() => {
       setOxygen(prev => Math.max(0, prev + (Math.random() > 0.5 ? 0.1 : -0.1)));
       setEnergy(prev => Math.max(0, prev - 0.05));
+      setWater(prev => Math.max(0, prev - 0.02));
       setBpm(prev => prev + (Math.random() > 0.5 ? 1 : -1));
     }, 5000);
     return () => clearInterval(interval);
@@ -153,6 +155,18 @@ export default function CrewScreen() {
     );
   };
 
+  const editWater = () => {
+    showInputModal(
+      "Recursos Hídricos",
+      "Volume de água (0-100):",
+      water.toFixed(0),
+      (text) => {
+        const val = parseFloat(text);
+        if (!isNaN(val) && val >= 0 && val <= 100) setWater(val);
+      }
+    );
+  };
+
   const handleSendMessage = () => {
     if (!messageInput.trim()) return;
     
@@ -244,6 +258,15 @@ export default function CrewScreen() {
                 </View>
                 <Text style={styles.statusValue}>{energy.toFixed(0)}%</Text>
                 <View style={styles.progressBar}><View style={[styles.progressFill, { width: `${energy}%`, backgroundColor: '#7000FF' }]} /></View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.statusBox} onPress={editWater} activeOpacity={0.7}>
+                <View style={styles.statusHeader}>
+                  <Text style={styles.statusLabel}>RESERVA ÁGUA</Text>
+                  <MaterialCommunityIcons name="water" size={10} color="#00E5FF" />
+                </View>
+                <Text style={styles.statusValue}>{water.toFixed(0)}%</Text>
+                <View style={styles.progressBar}><View style={[styles.progressFill, { width: `${water}%`, backgroundColor: '#00E5FF' }]} /></View>
               </TouchableOpacity>
             </View>
             
