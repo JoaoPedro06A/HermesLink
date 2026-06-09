@@ -141,6 +141,10 @@ export default function EarthCommandScreen() {
     setIsModalVisible(false);
   };
 
+  const deleteTask = (id: number) => {
+    setTasks(prev => prev.filter(task => task.id !== id));
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -223,6 +227,7 @@ export default function EarthCommandScreen() {
                   <Text style={[styles.columnLabel, { flex: 2 }]}>TAREFA</Text>
                   <Text style={styles.columnLabel}>PRIORIDADE</Text>
                   <Text style={styles.columnLabel}>STATUS</Text>
+                  <Text style={[styles.columnLabel, { flex: 0.4, textAlign: 'center' }]}>AÇÃO</Text>
                 </View>
                 
                 {tasks.map(task => (
@@ -230,6 +235,9 @@ export default function EarthCommandScreen() {
                     <Text style={[styles.rowText, { flex: 2 }]}>{task.name}</Text>
                     <Text style={[styles.rowText, { color: task.color }]}>{task.priority}</Text>
                     <Text style={styles.rowText}>{task.status}</Text>
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => deleteTask(task.id)}>
+                      <MaterialCommunityIcons name="trash-can-outline" size={18} color="#FF3D00" />
+                    </TouchableOpacity>
                   </View>
                 ))}
               </View>
@@ -392,6 +400,7 @@ const styles = StyleSheet.create({
   columnLabel: { flex: 1, color: '#FFFFFF', fontSize: 10, fontWeight: 'bold', opacity: 0.6 },
   tableRow: { flexDirection: 'row', padding: 15, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   rowText: { flex: 1, color: '#FFFFFF', fontSize: 12 },
+  deleteButton: { flex: 0.4, alignItems: 'center', justifyContent: 'center' },
   decisionLog: { backgroundColor: 'rgba(255,255,255,0.02)', padding: 15, borderRadius: 8 },
   logItem: { color: 'rgba(255,255,255,0.4)', fontSize: 11, marginBottom: 8, fontFamily: 'monospace' },
 

@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import io from 'socket.io-client';
 
@@ -17,6 +17,22 @@ export default function CrewScreen() {
   const [statusText, setStatusText] = useState('ESTÁVEL');
   const [currentName, setCurrentName] = useState(name || 'TRIPULANTE');
   const [currentId, setCurrentId] = useState(id || 'T-00');
+
+  // Estados para o Modal de Entrada (Substituto do Alert.prompt)
+  const [isInputModalVisible, setIsInputModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    placeholder: '',
+    onConfirm: (text: string) => {},
+  });
+  const [inputValue, setInputValue] = useState('');
+
+  // Função auxiliar para abrir o prompt customizado
+  const showInputModal = (title: string, placeholder: string, initialValue: string, onConfirm: (text: string) => void) => {
+    setModalConfig({ title, placeholder, onConfirm });
+    setInputValue(initialValue);
+    setIsInputModalVisible(true);
+  };
 
   const [messageInput, setMessageInput] = useState('');
   const scrollViewRef = useRef<ScrollView>(null);
@@ -72,82 +88,68 @@ export default function CrewScreen() {
   };
 
   const addNewTask = () => {
-    // Nota: Alert.prompt é uma funcionalidade nativa do iOS. 
-    Alert.prompt("Nova Tarefa Operacional", "Descreva a atividade para este SOL:", (text) => {
-      if (text) {
-        setTasks([...tasks, { id: Date.now(), text, completed: false }]);
+    showInputModal("Nova Tarefa", "Descreva a atividade:", "", (text) => {
+      if (text.trim()) {
+        setTasks(prev => [...prev, { id: Date.now(), text, completed: false }]);
       }
     });
   };
 
   const editOxygen = () => {
-    // Nota: Alert.prompt é nativo do iOS. Para Android/Web, valores fixos ou um Modal seriam usados.
-    Alert.prompt(
+    showInputModal(
       "Ajustar Oxigênio",
-      "Digite o nível atual do sistema (0-100):",
+      "Nível atual (0-100):",
+      oxygen.toFixed(0),
       (text) => {
         const val = parseFloat(text);
         if (!isNaN(val) && val >= 0 && val <= 100) setOxygen(val);
-      },
-      'plain-text',
-      oxygen.toFixed(0)
+      }
     );
   };
 
   const editBpm = () => {
-    Alert.prompt(
+    showInputModal(
       "Monitor Cardíaco",
-      "Ajustar frequência (BPM):",
+      "Frequência (BPM):",
+      bpm.toString(),
       (text) => {
         const val = parseInt(text);
         if (!isNaN(val)) setBpm(val);
-      },
-      'plain-text',
-      bpm.toString()
+      }
     );
   };
 
   const editStatusText = () => {
-    Alert.prompt(
+    showInputModal(
       "Status Operacional",
-      "Defina a situação atual (ex: ESTÁVEL, ALERTA, CRÍTICO):",
+      "Defina a situação (ex: ESTÁVEL, ALERTA):",
+      statusText,
       (text) => {
-        if (text) setStatusText(text.toUpperCase());
-      },
-      'plain-text',
-      statusText
+        if (text.trim()) setStatusText(text.toUpperCase());
+      }
     );
   };
 
   const editProfile = () => {
-    Alert.prompt(
+    showInputModal(
       "Editar Perfil",
-      "Digite o novo nome do astronauta:",
+      "Nome do astronauta:",
+      Array.isArray(currentName) ? currentName[0] : currentName,
       (newName) => {
-        if (newName) {
-          setCurrentName(newName.toUpperCase());
-          Alert.prompt(
-            "Identificação",
-            "Digite o novo ID (ex: T-01):",
-            (newId) => {
-              if (newId) setCurrentId(newId.toUpperCase());
-            }
-          );
-        }
+        if (newName.trim()) setCurrentName(newName.toUpperCase());
       }
     );
   };
 
   const editEnergy = () => {
-    Alert.prompt(
+    showInputModal(
       "Ajustar Energia",
-      "Digite a carga atual das baterias (0-100):",
+      "Carga atual (0-100):",
+      energy.toFixed(0),
       (text) => {
         const val = parseFloat(text);
         if (!isNaN(val) && val >= 0 && val <= 100) setEnergy(val);
-      },
-      'plain-text',
-      energy.toFixed(0)
+      }
     );
   };
 
@@ -302,6 +304,47 @@ export default function CrewScreen() {
 
         </ScrollView>
       </SafeAreaView>
+
+      {/* Modal para Entrada de Dados (Cross-platform) */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isInputModalVisible}
+        onRequestClose={() => setIsInputModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{modalConfig.title}</Text>
+            <Text style={styles.modalLabel}>{modalConfig.placeholder}</Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              value={inputValue}
+              onChangeText={setInputValue}
+              autoFocus={true}
+              placeholderTextColor="rgba(255,255,255,0.2)"
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={styles.cancelButton} 
+                onPress={() => setIsInputModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>CANCELAR</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.confirmButton} 
+                onPress={() => {
+                  modalConfig.onConfirm(inputValue);
+                  setIsInputModalVisible(false);
+                }}
+              >
+                <Text style={styles.confirmButtonText}>CONFIRMAR</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -393,4 +436,25 @@ const styles = StyleSheet.create({
   },
   taskText: { color: '#FFFFFF', marginLeft: 12, fontSize: 14 },
   taskDone: { opacity: 0.3, textDecorationLine: 'line-through' },
+
+  // Estilos do Modal de Entrada
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: { backgroundColor: '#0A0E14', width: '85%', maxWidth: 400, padding: 25, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(0, 229, 255, 0.3)' },
+  modalTitle: { color: '#00E5FF', fontSize: 16, fontWeight: 'bold', letterSpacing: 2, marginBottom: 15, textAlign: 'center' },
+  modalLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 10 },
+  modalInput: { 
+    backgroundColor: 'rgba(255,255,255,0.05)', 
+    color: '#FFFFFF', 
+    padding: 15, 
+    borderRadius: 8, 
+    fontSize: 16, 
+    borderWidth: 1, 
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 20
+  },
+  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 15 },
+  cancelButton: { padding: 10 },
+  cancelButtonText: { color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' },
+  confirmButton: { backgroundColor: '#00E5FF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 6 },
+  confirmButtonText: { color: '#05070A', fontWeight: 'bold' },
 });
